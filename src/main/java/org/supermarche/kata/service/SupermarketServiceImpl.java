@@ -10,12 +10,16 @@ public class SupermarketServiceImpl implements SupermarketService {
 
     @Override
     public double calculateTotalPrice(ShoppingCart cart) {
-        double totalPrice = 0;
-        for (Map.Entry<Product, Integer> entry : cart.getItems().entrySet()) {
-            Product product = entry.getKey();
-            int quantity = entry.getValue();
-            totalPrice += product.getPrice() * quantity;
+        if (cart == null) {
+            throw new IllegalArgumentException("Le panier ne peut pas être null.");
         }
-        return totalPrice;
+
+        return cart.getItems().entrySet().stream()
+                .mapToDouble(entry -> {
+                    Product product = entry.getKey();
+                    int quantity = entry.getValue();
+                    return product.getPrice() * quantity;
+                })
+                .sum();
     }
 }

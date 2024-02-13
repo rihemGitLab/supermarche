@@ -3,40 +3,47 @@ package org.supermarche.kata.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class ShoppingCart {
     private Map<Product, Integer> items = new HashMap<>();
 
     public void addProduct(Product product, int quantity) {
-        items.put(product,  quantity);
+        if (product == null) {
+            throw new IllegalArgumentException("Le produit ne peut pas être null.");
+        }
+        if (quantity < 0) {
+            throw new IllegalArgumentException("La quantité ne peut pas être négative.");
+        }
+        items.put(product, quantity);
     }
-
-    public int getProductCount(String productName) {
+    public int getProductCount(ProductName productName) {
+        // Vérifie si le nom du produit est null
+        if (productName == null) {
+            throw new IllegalArgumentException("Le nom du produit ne peut pas être null.");
+        }
         return items.entrySet().stream()
-                .filter(entry -> entry.getKey().getName().equals(productName))
+                .filter(entry -> entry.getKey().getName() == productName)
                 .mapToInt(Map.Entry::getValue)
                 .sum();
     }
 
-    public void setProductCount(String productName, int quantity) {
-        Product product = items.keySet().stream()
-                .filter(p -> p.getName().equals(productName))
-                .findFirst().orElse(null);
-        if (product != null) {
-            items.put(product, quantity);
-        }
+
+
+    public Product getProductByName(ProductName productName) {
+        return findProductByName(productName).orElse(null);
     }
-    public Product getProductByName(String productName) {
-        for (Map.Entry<Product, Integer> entry : items.entrySet()) {
-            if (entry.getKey().getName().equals(productName)) {
-                return entry.getKey();
-            }
-        }
-        return null; // Retourner null si le produit n'est pas trouvé
+
+    public void setProductCount(ProductName productName, int quantity) {
+        findProductByName(productName).ifPresent(product -> items.put(product, quantity));
     }
-    public void applySpecialOffer(SpecialOffer offer) {
-        offer.applyOffer(this);
+
+    private Optional<Product> findProductByName(ProductName productName) {
+        return items.keySet().stream()
+                .filter(product -> product.getName() == productName)
+                .findFirst();
     }
+
     public Map<Product, Integer> getItems() {
         return new HashMap<>(items); // Return a copy to prevent modification of the original map
     }
